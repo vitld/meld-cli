@@ -19,7 +19,7 @@ export interface GenerateOptions {
 }
 
 type GenerateResult =
-  | { ok: true; files: GeneratedFile[]; warnings: string[] }
+  | { ok: true; files: GeneratedFile[]; warnings: string[]; hubName: string }
   | { ok: false; errors: string[] };
 
 const AGENT_GENERATORS: Record<AgentName, () => Generator> = {
@@ -71,5 +71,5 @@ export function generate(
 
   writeGeneratedFiles(hubDir, allFiles, { dryRun: options.dryRun });
 
-  return { ok: true, files: allFiles, warnings };
+  return { ok: true, files: allFiles, warnings, hubName: config.ide.workspaceName };
 }

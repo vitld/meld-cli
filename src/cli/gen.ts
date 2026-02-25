@@ -30,9 +30,9 @@ export const genCommand = new Command("gen")
     }
 
     if (options.dryRun) {
-      console.log("Dry run — would generate:");
+      console.log(`${result.hubName} — dry run, would generate:`);
     } else {
-      console.log("Generated:");
+      console.log(`${result.hubName} — generated:`);
     }
 
     for (const file of result.files) {
