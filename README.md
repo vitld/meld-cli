@@ -7,7 +7,7 @@
  ╚═╝     ╚═╝ ╚══════╝ ╚══════╝ ╚═════╝
 ```
 
-[![npm](https://img.shields.io/npm/v/meld-cli)](https://www.npmjs.com/package/meld-cli)
+[![npm](https://img.shields.io/npm/v/@vitld/meld-cli)](https://www.npmjs.com/package/@vitld/meld-cli)
 [![license](https://img.shields.io/github/license/vitld/meld-cli)](LICENSE)
 [![CI](https://github.com/vitld/meld-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/vitld/meld-cli/actions/workflows/ci.yml)
 
@@ -42,12 +42,12 @@ Supported agents:
 ## Install
 
 ```bash
-npm install -g meld-cli
+npm install -g @vitld/meld-cli
 # or
-pnpm add -g meld-cli
+pnpm add -g @vitld/meld-cli
 ```
 
-The package installs as `meld-cli` but the command is `meld`.
+The package installs as `@vitld/meld-cli` but the command is `meld`.
 
 ## Quick start
 

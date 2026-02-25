@@ -1,5 +1,5 @@
 {
-  "name": "meld-cli",
+  "name": "@vitld/meld-cli",
   "version": "0.1.0",
   "description": "Agent-agnostic settings generator for AI coding agents",
   "type": "module",
