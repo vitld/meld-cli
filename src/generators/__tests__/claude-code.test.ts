@@ -121,18 +121,18 @@ describe("ClaudeCodeGenerator", () => {
     expect(parsed.permissions.allow).toContain("ToolSearch");
 
     // Non-destructive Bash commands (not path-scoped)
-    expect(parsed.permissions.allow).toContain("Bash(command:cd *)");
-    expect(parsed.permissions.allow).toContain("Bash(command:ls *)");
-    expect(parsed.permissions.allow).toContain("Bash(command:mkdir *)");
-    expect(parsed.permissions.allow).toContain("Bash(command:git *)");
-    expect(parsed.permissions.allow).toContain("Bash(command:node *)");
+    expect(parsed.permissions.allow).toContain("Bash(cd:*)");
+    expect(parsed.permissions.allow).toContain("Bash(ls:*)");
+    expect(parsed.permissions.allow).toContain("Bash(mkdir:*)");
+    expect(parsed.permissions.allow).toContain("Bash(git:*)");
+    expect(parsed.permissions.allow).toContain("Bash(node:*)");
 
     // Hub root permissions (Read, Glob, Grep, Write, Edit)
-    expect(parsed.permissions.allow).toContain("Read(///tmp/hub/**)");
-    expect(parsed.permissions.allow).toContain("Glob(///tmp/hub/**)");
-    expect(parsed.permissions.allow).toContain("Grep(///tmp/hub/**)");
-    expect(parsed.permissions.allow).toContain("Write(///tmp/hub/**)");
-    expect(parsed.permissions.allow).toContain("Edit(///tmp/hub/**)");
+    expect(parsed.permissions.allow).toContain("Read(//tmp/hub/**)");
+    expect(parsed.permissions.allow).toContain("Glob(//tmp/hub/**)");
+    expect(parsed.permissions.allow).toContain("Grep(//tmp/hub/**)");
+    expect(parsed.permissions.allow).toContain("Write(//tmp/hub/**)");
+    expect(parsed.permissions.allow).toContain("Edit(//tmp/hub/**)");
 
     // Per-project scoped permissions
     expect(parsed.permissions.allow).toContain("Read(//~/myapp/**)");

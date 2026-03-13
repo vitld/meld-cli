@@ -104,24 +104,27 @@ export class ClaudeCodeGenerator implements Generator {
       "which", "pwd", "ast-grep",
     ];
     for (const cmd of safeBashCommands) {
-      allow.push(`Bash(command:${cmd} *)`);
+      allow.push(`Bash(${cmd}:*)`);
     }
 
+    // Absolute path prefix: // replaces the leading / in absolute paths
+    const absPath = (dir: string) => `//${dir.replace(/^\//, "")}`;
+
     // Hub root permissions
-    allow.push(`Read(//${hubDir}/**)`);
-    allow.push(`Glob(//${hubDir}/**)`);
-    allow.push(`Grep(//${hubDir}/**)`);
-    allow.push(`Write(//${hubDir}/**)`);
-    allow.push(`Edit(//${hubDir}/**)`);
+    allow.push(`Read(${absPath(hubDir)}/**)`);
+    allow.push(`Glob(${absPath(hubDir)}/**)`);
+    allow.push(`Grep(${absPath(hubDir)}/**)`);
+    allow.push(`Write(${absPath(hubDir)}/**)`);
+    allow.push(`Edit(${absPath(hubDir)}/**)`);
 
     // Per-project permissions
     const additionalDirectories: string[] = [];
     for (const [, project] of Object.entries(config.projects)) {
-      allow.push(`Read(//${project.path}/**)`);
-      allow.push(`Glob(//${project.path}/**)`);
-      allow.push(`Grep(//${project.path}/**)`);
-      allow.push(`Write(//${project.path}/**)`);
-      allow.push(`Edit(//${project.path}/**)`);
+      allow.push(`Read(${absPath(project.path)}/**)`);
+      allow.push(`Glob(${absPath(project.path)}/**)`);
+      allow.push(`Grep(${absPath(project.path)}/**)`);
+      allow.push(`Write(${absPath(project.path)}/**)`);
+      allow.push(`Edit(${absPath(project.path)}/**)`);
       additionalDirectories.push(project.path);
     }
     settings.permissions = { allow, additionalDirectories };
