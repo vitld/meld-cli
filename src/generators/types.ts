@@ -11,3 +11,9 @@ export interface GeneratedFile {
   path: string;
   content: string;
 }
+
+export interface GeneratedSkillDir {
+  sourceDir: string;
+  outputDir: string;
+  transformedSkillMd: string;
+}

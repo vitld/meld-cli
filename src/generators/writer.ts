@@ -1,6 +1,6 @@
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, readdirSync, copyFileSync } from "node:fs";
 import { join, dirname } from "node:path";
-import type { GeneratedFile } from "./types.js";
+import type { GeneratedFile, GeneratedSkillDir } from "./types.js";
 
 export interface WriteOptions {
   dryRun?: boolean;
@@ -19,4 +19,32 @@ export function writeGeneratedFiles(
     }
   }
   return files;
+}
+
+export function writeGeneratedSkillDirs(
+  hubDir: string,
+  skillDirs: GeneratedSkillDir[],
+  options: WriteOptions = {},
+): void {
+  if (options.dryRun) return;
+
+  for (const skill of skillDirs) {
+    const destDir = join(hubDir, skill.outputDir);
+    copyDirRecursive(skill.sourceDir, destDir);
+    writeFileSync(join(destDir, "SKILL.md"), skill.transformedSkillMd);
+  }
+}
+
+function copyDirRecursive(src: string, dest: string): void {
+  mkdirSync(dest, { recursive: true });
+  const entries = readdirSync(src, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = join(src, entry.name);
+    const destPath = join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyDirRecursive(srcPath, destPath);
+    } else {
+      copyFileSync(srcPath, destPath);
+    }
+  }
 }
