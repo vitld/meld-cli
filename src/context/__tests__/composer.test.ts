@@ -140,6 +140,54 @@ describe("composeContext", () => {
     expect(ctx.skills).toHaveLength(0);
   });
 
+  it("discovers external skills when enable-external-skills is true", () => {
+    mkdirSync(join(hubDir, ".agents", "skills", "shadcn"), { recursive: true });
+    writeFileSync(join(hubDir, ".agents", "skills", "shadcn", "SKILL.md"), [
+      "---",
+      "name: shadcn",
+      "description: UI components",
+      "---",
+      "",
+      "Use shadcn.",
+    ].join("\n"));
+
+    const ctx = composeContext(hubDir, makeConfig({ "enable-external-skills": true }));
+    expect(ctx.skills).toHaveLength(1);
+    expect(ctx.skills[0].name).toBe("shadcn");
+    expect(ctx.skills[0].source).toBe("external");
+    expect(ctx.skills[0].sourceDir).toBe(join(hubDir, ".agents", "skills", "shadcn"));
+  });
+
+  it("ignores external skills when enable-external-skills is false", () => {
+    mkdirSync(join(hubDir, ".agents", "skills", "shadcn"), { recursive: true });
+    writeFileSync(join(hubDir, ".agents", "skills", "shadcn", "SKILL.md"), [
+      "---",
+      "name: shadcn",
+      "description: UI components",
+      "---",
+      "",
+      "Use shadcn.",
+    ].join("\n"));
+
+    const ctx = composeContext(hubDir, makeConfig());
+    expect(ctx.skills).toHaveLength(0);
+  });
+
+  it("merges local and external skills sorted alphabetically", () => {
+    mkdirSync(join(hubDir, "skills", "zebra-skill"), { recursive: true });
+    writeFileSync(join(hubDir, "skills", "zebra-skill", "SKILL.md"), "---\nname: zebra-skill\ndescription: Z\n---\n\nZ.");
+
+    mkdirSync(join(hubDir, ".agents", "skills", "alpha-skill"), { recursive: true });
+    writeFileSync(join(hubDir, ".agents", "skills", "alpha-skill", "SKILL.md"), "---\nname: alpha-skill\ndescription: A\n---\n\nA.");
+
+    const ctx = composeContext(hubDir, makeConfig({ "enable-external-skills": true }));
+    expect(ctx.skills).toHaveLength(2);
+    expect(ctx.skills[0].name).toBe("alpha-skill");
+    expect(ctx.skills[0].source).toBe("external");
+    expect(ctx.skills[1].name).toBe("zebra-skill");
+    expect(ctx.skills[1].source).toBe("local");
+  });
+
   it("only reads .md files from context root (not other files)", () => {
     mkdirSync(join(hubDir, "context"));
     writeFileSync(join(hubDir, "context", "rules.md"), "Rules");

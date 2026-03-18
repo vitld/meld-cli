@@ -14,7 +14,7 @@ export function composeContext(hubDir: string, config: MeldConfig): ComposedCont
     context: inline,
     contextFiles,
     commands: readCommands(hubDir),
-    skills: readSkills(hubDir),
+    skills: readSkills(hubDir, config),
   };
 }
 
@@ -143,8 +143,17 @@ function readCommands(hubDir: string): CommandMeta[] {
     }));
 }
 
-function readSkills(hubDir: string): SkillMeta[] {
-  const skillsDir = join(hubDir, "skills");
+function readSkills(hubDir: string, config: MeldConfig): SkillMeta[] {
+  const localSkills = readSkillsFromDir(join(hubDir, "skills"), "local");
+
+  if (!config["enable-external-skills"]) return localSkills;
+
+  const externalSkills = readSkillsFromDir(join(hubDir, ".agents", "skills"), "external");
+
+  return [...localSkills, ...externalSkills].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function readSkillsFromDir(skillsDir: string, source: "local" | "external"): SkillMeta[] {
   if (!existsSync(skillsDir)) return [];
 
   return readdirSync(skillsDir, { withFileTypes: true })
@@ -157,7 +166,7 @@ function readSkills(hubDir: string): SkillMeta[] {
       const raw = readFileSync(skillFile, "utf-8");
       const { frontmatter, body } = parseFrontmatter(raw);
 
-      return { name: d.name, frontmatter, body, source: "local", sourceDir: join(skillsDir, d.name) };
+      return { name: d.name, frontmatter, body, source, sourceDir: join(skillsDir, d.name) };
     })
     .filter((s): s is SkillMeta => s !== null);
 }
