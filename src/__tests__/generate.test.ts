@@ -69,6 +69,52 @@ describe("generate", () => {
     }
   });
 
+  it("distributes external skills to all enabled agents", () => {
+    const config = {
+      ...validConfig,
+      "enable-external-skills": true,
+      agents: { "claude-code": { enabled: true }, "codex-cli": { enabled: true }, "gemini-cli": { enabled: false } },
+    };
+    writeFileSync(join(hubDir, "meld.jsonc"), JSON.stringify(config));
+
+    // Local skill
+    mkdirSync(join(hubDir, "skills", "my-local"), { recursive: true });
+    writeFileSync(join(hubDir, "skills", "my-local", "SKILL.md"), "---\nname: my-local\ndescription: Local\n---\n\nLocal skill.");
+
+    // External skill with extra files
+    mkdirSync(join(hubDir, ".agents", "skills", "ext-skill", "rules"), { recursive: true });
+    writeFileSync(join(hubDir, ".agents", "skills", "ext-skill", "SKILL.md"), "---\nname: ext-skill\ndescription: External\n---\n\nExternal skill.");
+    writeFileSync(join(hubDir, ".agents", "skills", "ext-skill", "rules", "base.md"), "Base rules");
+
+    const result = generate(hubDir);
+    expect(result.ok).toBe(true);
+
+    // Claude Code: local skill with meld- prefix
+    expect(existsSync(join(hubDir, "agents/claude-code/.claude/skills/meld-my-local/SKILL.md"))).toBe(true);
+    // Claude Code: external skill without prefix, including extra files
+    expect(existsSync(join(hubDir, "agents/claude-code/.claude/skills/ext-skill/SKILL.md"))).toBe(true);
+    expect(existsSync(join(hubDir, "agents/claude-code/.claude/skills/ext-skill/rules/base.md"))).toBe(true);
+
+    // Codex: local skill with meld- prefix
+    expect(existsSync(join(hubDir, "agents/codex/.agents/skills/meld-my-local/SKILL.md"))).toBe(true);
+    // Codex: external skill without prefix
+    expect(existsSync(join(hubDir, "agents/codex/.agents/skills/ext-skill/SKILL.md"))).toBe(true);
+    expect(existsSync(join(hubDir, "agents/codex/.agents/skills/ext-skill/rules/base.md"))).toBe(true);
+  });
+
+  it("local skills still output as directories (single-file backward compat)", () => {
+    writeFileSync(join(hubDir, "meld.jsonc"), JSON.stringify(validConfig));
+
+    mkdirSync(join(hubDir, "skills", "simple"), { recursive: true });
+    writeFileSync(join(hubDir, "skills", "simple", "SKILL.md"), "---\nname: simple\ndescription: Simple\n---\n\nSimple.");
+
+    const result = generate(hubDir);
+    expect(result.ok).toBe(true);
+    expect(existsSync(join(hubDir, "agents/claude-code/.claude/skills/meld-simple/SKILL.md"))).toBe(true);
+    const content = readFileSync(join(hubDir, "agents/claude-code/.claude/skills/meld-simple/SKILL.md"), "utf-8");
+    expect(content).toContain("Simple.");
+  });
+
   it("returns errors for invalid config", () => {
     writeFileSync(join(hubDir, "meld.jsonc"), JSON.stringify({}));
     const result = generate(hubDir);
