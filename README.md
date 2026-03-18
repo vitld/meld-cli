@@ -11,35 +11,19 @@
 [![license](https://img.shields.io/github/license/vitld/meld-cli)](LICENSE)
 [![CI](https://github.com/vitld/meld-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/vitld/meld-cli/actions/workflows/ci.yml)
 
-Agent-agnostic settings generator for AI coding agents.
-
-## The spirit of the project
-
-Think of meld as IoC but for agentic workflows and setups. Let's call it AIaC?
-The goal is to mirror your preferred settings across multiple agent CLIs in a small and lightweight tool centralized to a single entry-point or workspace.
-Setup your context, your MCPs (and other settings) and your projects once.
-
-And yes, it's 100% vibe coded. If you find issues, please report!
-
-## Contribution & Issues
-Contributions are welcome! But try to keep it within the spirit of the project. Avoid leaning into the "agent runner and orchestration" space unless it can be done cleanly and without massive overhaul. Other than that, open for suggestions and ideas!
-
-Some known limitations:
-* Windows support (no clue if it works, haven't tested, probably not?)
-
-## What it does
-
-Meld creates a **hub** — a shared workspace that sits above your projects and generates per-agent configuration files. Define your projects, MCP servers, and instructions once in `meld.jsonc`, then run `meld gen` to produce native config files for each agent.
-
-Supported agents:
-
-| Agent | Generates |
-|-------|-----------|
-| Claude Code | `CLAUDE.md`, `.mcp.json` |
-| Codex CLI | `AGENTS.md`, `.codex/config.toml` |
-| Gemini CLI | `GEMINI.md`, `.gemini/settings.json` |
+Agent-agnostic settings generator for AI coding agents. Define your projects, context, MCP servers, and skills once — generate native configs for Claude Code, Codex CLI, and Gemini CLI.
 
 ## Install
+
+Run directly without installing:
+
+```bash
+npx @vitld/meld-cli init
+# or
+pnpm dlx @vitld/meld-cli init
+```
+
+Or install globally:
 
 ```bash
 npm install -g @vitld/meld-cli
@@ -47,7 +31,7 @@ npm install -g @vitld/meld-cli
 pnpm add -g @vitld/meld-cli
 ```
 
-The package installs as `@vitld/meld-cli` but the command is `meld`.
+The global install exposes the `meld` command.
 
 ## Quick start
 
@@ -59,13 +43,25 @@ meld gen
 meld claude-code   # or: meld codex-cli, meld gemini-cli
 ```
 
+## How it works
+
+Meld creates a **hub** — a shared workspace that sits above your projects. You configure everything in one place (`meld.jsonc`), and `meld gen` produces native config files for each agent:
+
+| Agent | Generated files |
+|-------|-----------------|
+| Claude Code | `CLAUDE.md`, `.mcp.json`, `.claude/settings.json` |
+| Codex CLI | `AGENTS.md`, `.codex/config.toml` |
+| Gemini CLI | `GEMINI.md`, `.gemini/settings.json` |
+
+Meld also generates a `.code-workspace` file and manages `.gitignore` entries.
+
 ## Hub structure
 
 ```
 my-hub/
   meld.jsonc          # Central configuration
   context/            # Markdown instructions for agents
-  skills/             # Reusable agent skills
+  skills/             # Reusable agent skills (SKILL.md per skill)
   artifacts/          # Research, plans, and notes
   scratch/            # Temporary work (gitignored)
   agents/             # Generated output (gitignored)
@@ -79,6 +75,7 @@ All configuration lives in `meld.jsonc` at the hub root:
 {
   "$schema": "./meld.schema.json",
   "ide": {
+    "default": "cursor",         // "cursor" | "code" | "windsurf"
     "workspaceName": "my-hub"
   },
   "agents": {
@@ -90,102 +87,69 @@ All configuration lives in `meld.jsonc` at the hub root:
     "my-app": {
       "path": "/absolute/path/to/my-app",
       "aliases": ["app"],
-      "repo": "org/my-app"
+      "repo": "org/my-app"       // optional — used in project table
     }
   },
-  "mcp": {
-    // MCP servers — see below
-  }
+  "mcp": {},
+  "context": "./context/",        // optional — custom context directory
+  "enable-external-skills": false  // optional — discover skills from .agents/skills/
 }
 ```
 
-## Agents
+### Agents
 
-Each agent supports three configuration options:
+Each agent supports these options:
 
 | Option | Required | Description |
 |--------|----------|-------------|
-| `enabled` | Yes | Enable config generation for this agent |
-| `dir` | No | Custom subdirectory name under `agents/` (defaults: `claude-code`, `codex`, `gemini`) |
-| `overrides` | No | Raw config overrides deep-merged into the agent's generated settings |
+| `enabled` | Yes | Enable config generation |
+| `dir` | No | Custom subdirectory under `agents/` (defaults: `claude-code`, `codex`, `gemini`) |
+| `overrides` | No | Deep-merged into the agent's generated settings file |
 
-### Overrides
-
-Use `overrides` to customize the generated agent config without editing output files directly. Values are deep-merged — you can add or replace individual keys without wiping generated defaults.
+Overrides let you customize generated configs without editing output files. What you can override depends on the agent's native format:
 
 ```jsonc
 "agents": {
   "claude-code": {
     "enabled": true,
     "overrides": {
-      "env": {
-        "CLAUDE_CODE_MAX_TURNS": "50"
-      }
+      "env": { "CLAUDE_CODE_MAX_TURNS": "50" }  // → .claude/settings.json
     }
   },
   "codex-cli": {
     "enabled": true,
     "overrides": {
-      "approval_policy": "never"
+      "approval_policy": "never"                 // → .codex/config.toml
     }
   }
 }
 ```
 
-What you can override depends on the agent's native config format:
+### MCP servers
 
-| Agent | Config format | Example override keys |
-|-------|---------------|----------------------|
-| Claude Code | `.claude/settings.json` | `env`, `permissions` |
-| Codex CLI | `.codex/config.toml` | `approval_policy`, `sandbox_mode`, `sandbox_workspace_write` |
-| Gemini CLI | `.gemini/settings.json` | `tools`, `mcpServers` |
+Defined once under `mcp`, automatically translated into each agent's native format (`.mcp.json`, `.codex/config.toml`, `.gemini/settings.json`).
 
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `meld init` | Initialize a new hub |
-| `meld gen` | Generate agent configs from `meld.jsonc` |
-| `meld gen --dry-run` | Preview without writing files |
-| `meld project add` | Register a project |
-| `meld project list` | List registered projects |
-| `meld open` | Open workspace in IDE |
-| `meld update` | Re-scaffold hub structure |
-| `meld claude-code` | Launch Claude Code in the agent directory |
-| `meld codex-cli` | Launch Codex CLI in the agent directory |
-| `meld gemini-cli` | Launch Gemini CLI in the agent directory |
-
-## MCP servers
-
-MCP servers are defined once in `meld.jsonc` under the `mcp` key and automatically translated into each agent's native config format.
-
-### Stdio server
+**Stdio server** (local process):
 
 ```jsonc
 "my-server": {
   "command": "npx",
   "args": ["-y", "my-mcp-server@latest"],
-  "env": {
-    "API_KEY": "sk-..."
-  }
+  "env": { "API_KEY": "sk-..." }
 }
 ```
 
-### HTTP server
+**HTTP server** (remote):
 
 ```jsonc
 "my-server": {
   "type": "http",
   "url": "https://mcp.example.com/mcp",
-  "headers": {
-    "Authorization": "Bearer tok-..."
-  }
+  "headers": { "Authorization": "Bearer tok-..." }
 }
 ```
 
-### Scoping servers to agents
-
-By default every MCP server is available to all enabled agents. Use `agents` to restrict:
+**Scoping to specific agents** — by default all servers go to all agents:
 
 ```jsonc
 "my-server": {
@@ -195,7 +159,7 @@ By default every MCP server is available to all enabled agents. Use `agents` to 
 }
 ```
 
-## Context & instructions
+## Context
 
 Files in the root of `context/` are inlined into agent instruction files (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`). Subfolders are copied into each agent's working directory so you can reference them with relative paths.
 
@@ -208,15 +172,40 @@ context/
     patterns.md
 ```
 
-Use numeric prefixes to control ordering. Run `meld gen` after editing.
+Use numeric prefixes to control ordering. Set `"context": "./my-context/"` to use a custom directory.
+
+## Skills
+
+Skills are reusable agent instructions with frontmatter metadata. Each skill lives in its own directory under `skills/` with a `SKILL.md` file:
+
+```
+skills/
+  deep-review/
+    SKILL.md
+```
+
+Skills support YAML frontmatter for metadata like `name`, `description`, and per-agent `model` overrides. They are distributed to each agent's native skill format during `meld gen`.
+
+Set `"enable-external-skills": true` to enable [skills.sh](https://skills.sh/) support — this discovers third-party skills installed in `.agents/skills/` and distributes them alongside your local skills.
+
+## CLI reference
+
+| Command | Description |
+|---------|-------------|
+| `meld init` | Initialize a new hub |
+| `meld gen` | Generate agent configs |
+| `meld gen --dry-run` | Preview without writing |
+| `meld project add` | Register a project |
+| `meld project list` | List registered projects |
+| `meld open` | Open workspace in IDE |
+| `meld update` | Re-scaffold hub structure and regenerate |
+| `meld claude-code` | Launch Claude Code in its agent directory |
+| `meld codex-cli` | Launch Codex CLI in its agent directory |
+| `meld gemini-cli` | Launch Gemini CLI in its agent directory |
 
 ## Team usage
 
-A meld hub can be shared across a team by committing it to version control. The key insight: `meld.jsonc` contains absolute project paths that differ per machine, so it should be gitignored — similar to how teams share `.env.example` files but gitignore the actual `.env`.
-
-### Recommended `.gitignore`
-
-Add these to the meld-managed section of your hub's `.gitignore`:
+`meld.jsonc` contains absolute project paths that differ per machine, so gitignore it — similar to `.env`. Everything else can be shared.
 
 ```gitignore
 # ── meld managed (do not edit) ──
@@ -228,26 +217,20 @@ scratch/
 meld.jsonc
 ```
 
-### What to commit
+| Commit | Don't commit |
+|--------|--------------|
+| `context/`, `skills/`, `artifacts/` | `meld.jsonc` (machine-specific paths) |
+| `meld.schema.json` (IDE autocompletion) | `agents/` (generated, gitignored) |
+| | `scratch/` (temporary, gitignored) |
 
-| Path | Commit? | Why |
-|------|---------|-----|
-| `context/` | Yes | Shared agent instructions |
-| `skills/` | Yes | Shared skills |
-| `artifacts/` | Yes | Shared research and notes |
-| `meld.jsonc` | No | Contains machine-specific project paths |
-| `meld.schema.json` | Yes | Generated by meld, but enables IDE autocompletion for teammates |
-| `agents/` | No | Generated output (already gitignored) |
-| `scratch/` | No | Temporary work (already gitignored) |
+> **Tip:** Commit a `meld.example.jsonc` with placeholder paths as a template for new team members.
 
-### Onboarding a new team member
+## Contributing
 
-1. Clone the hub repo
-2. Get a copy of `meld.jsonc` from a teammate (or keep a `meld.example.jsonc` in the repo)
-3. Update the project paths to match local checkout locations
-4. Run `meld gen` to generate agent configs
+Contributions are welcome! Try to keep it within the spirit of the project — a lightweight config generator, not an agent runner or orchestrator.
 
-> **Tip:** You can commit a `meld.example.jsonc` with placeholder paths as a template for new team members, the same way you'd commit an `.env.example`.
+Known limitations:
+* Windows is untested
 
 ## Requirements
 
