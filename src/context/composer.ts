@@ -70,7 +70,7 @@ function buildArtifactsSection(): string {
     "- Per-project artifacts: `../../artifacts/projects/{project-name}/`",
     "- Scratch (temporary work, gitignored): `../../scratch/`",
     "",
-    "> Save research, plans, and notes to the appropriate artifacts folder.",
+    "> When saving design docs, plans, research, or other artifacts, always ask the user whether to store them in hub artifacts or project artifacts.",
   ].join("\n");
 }
 
