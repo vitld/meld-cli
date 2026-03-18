@@ -65,7 +65,6 @@ meld claude-code   # or: meld codex-cli, meld gemini-cli
 my-hub/
   meld.jsonc          # Central configuration
   context/            # Markdown instructions for agents
-  commands/           # Slash commands
   skills/             # Reusable agent skills
   artifacts/          # Research, plans, and notes
   scratch/            # Temporary work (gitignored)
@@ -234,7 +233,6 @@ meld.jsonc
 | Path | Commit? | Why |
 |------|---------|-----|
 | `context/` | Yes | Shared agent instructions |
-| `commands/` | Yes | Shared slash commands |
 | `skills/` | Yes | Shared skills |
 | `artifacts/` | Yes | Shared research and notes |
 | `meld.jsonc` | No | Contains machine-specific project paths |

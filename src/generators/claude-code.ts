@@ -25,13 +25,6 @@ export class ClaudeCodeGenerator implements Generator {
       content: this.buildSettings(config, context.hubDir),
     });
 
-    for (const command of context.commands) {
-      files.push({
-        path: `.claude/commands/meld/${command.name}.md`,
-        content: command.content,
-      });
-    }
-
     for (const file of context.contextFiles) {
       files.push({ path: file.path, content: file.content });
     }

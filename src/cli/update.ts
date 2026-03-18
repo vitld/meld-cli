@@ -44,7 +44,6 @@ export const updateCommand = new Command("update")
     // 2. Ensure standard dirs
     const standardDirs = [
       "context",
-      "commands",
       "skills",
       join("artifacts", "hub"),
       "scratch",

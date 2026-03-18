@@ -11,7 +11,6 @@ const context: ComposedContext = {
   artifactsSection: "## Artifacts",
   context: "Rules",
   contextFiles: [],
-  commands: [],
   skills: [],
 };
 

@@ -21,7 +21,6 @@ function makeContext(overrides: Partial<ComposedContext> = {}): ComposedContext 
     artifactsSection: "## Artifacts",
     context: "Rules here.",
     contextFiles: [],
-    commands: [],
     skills: [],
     ...overrides,
   };
@@ -103,14 +102,6 @@ describe("CodexCliGenerator", () => {
     expect(toml!.content).toContain('approval_policy = "never"');
     expect(toml!.content).toContain('network_access = true');
     expect(toml!.content).toContain('writable_roots = ["/custom/root"]');
-  });
-
-  it("generates commands as .agents/skills/meld-cmd-*/SKILL.md", () => {
-    const ctx = makeContext({ commands: [{ name: "review", content: "Do review" }] });
-    const { files } = gen.generate(makeConfig(), ctx);
-    const cmd = files.find((f) => f.path === ".agents/skills/meld-cmd-review/SKILL.md");
-    expect(cmd).toBeDefined();
-    expect(cmd!.content).toContain("Do review");
   });
 
   it("generates local skill dirs with meld- prefix and codex model", () => {

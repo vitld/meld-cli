@@ -10,7 +10,6 @@ export interface ComposedContext {
   artifactsSection: string;
   context: string;
   contextFiles: ContextFile[];
-  commands: CommandMeta[];
   skills: SkillMeta[];
 }
 
@@ -19,11 +18,6 @@ export interface ProjectIndexEntry {
   aliases: string[];
   path: string;
   repo?: string;
-}
-
-export interface CommandMeta {
-  name: string;
-  content: string;
 }
 
 export interface SkillMeta {

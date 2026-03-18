@@ -23,7 +23,6 @@ function makeContext(hubDir: string): ComposedContext {
     artifactsSection: "",
     context: "",
     contextFiles: [],
-    commands: [],
     skills: [],
   };
 }

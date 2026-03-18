@@ -45,7 +45,6 @@ export function generateReadme(config: MeldConfig): string {
     "|------|---------|",
     "| `meld.jsonc` | Central configuration |",
     "| `context/` | Markdown instructions for agents |",
-    "| `commands/` | Slash commands |",
     "| `skills/` | Reusable agent skills |",
     "| `artifacts/` | Research, plans, and notes |",
     "| `scratch/` | Temporary work (gitignored) |",

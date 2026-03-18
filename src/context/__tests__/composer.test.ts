@@ -55,7 +55,6 @@ describe("composeContext", () => {
     expect(ctx.hubPreamble).toContain("## Hub Structure");
     expect(ctx.hubPreamble).toContain("meld.jsonc");
     expect(ctx.hubPreamble).toContain("context/");
-    expect(ctx.hubPreamble).toContain("commands/");
     expect(ctx.hubPreamble).toContain("skills/");
     expect(ctx.hubPreamble).toContain("artifacts/");
     expect(ctx.hubPreamble).toContain("scratch/");
@@ -82,16 +81,6 @@ describe("composeContext", () => {
     expect(ctx.artifactsSection).toContain("artifacts/hub/");
     expect(ctx.artifactsSection).toContain("artifacts/projects/{project-name}/");
     expect(ctx.artifactsSection).toContain("scratch/");
-  });
-
-  it("reads commands from commands/ directory", () => {
-    mkdirSync(join(hubDir, "commands"));
-    writeFileSync(join(hubDir, "commands", "review.md"), "Do a review");
-
-    const ctx = composeContext(hubDir, makeConfig());
-    expect(ctx.commands).toHaveLength(1);
-    expect(ctx.commands[0].name).toBe("review");
-    expect(ctx.commands[0].content).toBe("Do a review");
   });
 
   it("reads skills from skills/ directory", () => {

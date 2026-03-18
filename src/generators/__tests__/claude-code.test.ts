@@ -23,7 +23,6 @@ function makeContext(overrides: Partial<ComposedContext> = {}): ComposedContext 
     artifactsSection: "## Artifacts\n\n- Hub: `../../artifacts/hub/`",
     context: "Some context rules.",
     contextFiles: [],
-    commands: [],
     skills: [],
     ...overrides,
   };
@@ -72,14 +71,6 @@ describe("ClaudeCodeGenerator", () => {
     // Stdio server: command + args + env, no type
     expect(parsed.mcpServers.local).toEqual({ command: "node", args: ["server.js"], env: { KEY: "val" } });
     expect(parsed.mcpServers.local.type).toBeUndefined();
-  });
-
-  it("generates commands as .claude/commands/meld/*.md", () => {
-    const ctx = makeContext({ commands: [{ name: "review", content: "Do review" }] });
-    const { files } = gen.generate(makeConfig(), ctx);
-    const cmd = files.find((f) => f.path === ".claude/commands/meld/review.md");
-    expect(cmd).toBeDefined();
-    expect(cmd!.content).toBe("Do review");
   });
 
   it("generates local skill dirs with meld- prefix", () => {

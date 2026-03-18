@@ -118,7 +118,6 @@ export const initCommand = new Command("init")
 
     // Create directories
     ensureDir(join(hubDir, "context"));
-    ensureDir(join(hubDir, "commands"));
     ensureDir(join(hubDir, "skills"));
     ensureDir(join(hubDir, "artifacts", "hub"));
     ensureDir(join(hubDir, "scratch"));
@@ -152,7 +151,6 @@ export const initCommand = new Command("init")
         `  meld.schema.json    — JSON schema for validation`,
         `  README.md           — getting started guide`,
         `  context/            — agent instructions`,
-        `  commands/            — slash commands`,
         `  skills/              — reusable skills`,
         `  artifacts/hub/       — research & notes`,
         `  scratch/             — temporary work`,

@@ -1,8 +1,8 @@
 import { readdirSync, readFileSync, existsSync } from "node:fs";
-import { join, basename, extname, relative } from "node:path";
+import { join, relative } from "node:path";
 import { resolveContextPath } from "../config/types.js";
 import type { MeldConfig } from "../config/types.js";
-import type { ComposedContext, ContextFile, ProjectIndexEntry, CommandMeta, SkillMeta } from "./types.js";
+import type { ComposedContext, ContextFile, ProjectIndexEntry, SkillMeta } from "./types.js";
 
 export function composeContext(hubDir: string, config: MeldConfig): ComposedContext {
   const { inline, contextFiles } = readContext(hubDir, config);
@@ -13,7 +13,6 @@ export function composeContext(hubDir: string, config: MeldConfig): ComposedCont
     artifactsSection: buildArtifactsSection(),
     context: inline,
     contextFiles,
-    commands: readCommands(hubDir),
     skills: readSkills(hubDir, config),
   };
 }
@@ -32,7 +31,6 @@ function buildHubPreamble(config: MeldConfig): string {
     "|------|---------|",
     "| `meld.jsonc` | Central config — projects, agents, MCP servers |",
     "| `context/` | Agent instructions — root `.md` files are inlined, subfolders are copied |",
-    "| `commands/` | Slash commands available to agents |",
     "| `skills/` | Reusable skills with frontmatter metadata |",
     ...(config["enable-external-skills"] ? ["| `.agents/skills/` | External skills installed via [skills.sh](https://skills.sh/) |"] : []),
     "| `artifacts/` | Persistent research, plans, and notes |",
@@ -129,19 +127,6 @@ function collectFiles(dirPath: string, relativeTo: string, out: ContextFile[]): 
       });
     }
   }
-}
-
-function readCommands(hubDir: string): CommandMeta[] {
-  const commandsDir = join(hubDir, "commands");
-  if (!existsSync(commandsDir)) return [];
-
-  return readdirSync(commandsDir)
-    .filter((f) => f.endsWith(".md"))
-    .sort()
-    .map((f) => ({
-      name: basename(f, extname(f)),
-      content: readFileSync(join(commandsDir, f), "utf-8"),
-    }));
 }
 
 function readSkills(hubDir: string, config: MeldConfig): SkillMeta[] {

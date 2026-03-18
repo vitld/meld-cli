@@ -24,7 +24,6 @@ function makeContext(): ComposedContext {
     artifactsSection: "",
     context: "",
     contextFiles: [],
-    commands: [],
     skills: [],
   };
 }

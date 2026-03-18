@@ -20,13 +20,6 @@ export class GeminiCliGenerator implements Generator {
       content: this.buildSettings(config),
     });
 
-    for (const command of context.commands) {
-      files.push({
-        path: `.gemini/commands/meld/${command.name}.toml`,
-        content: this.buildCommandToml(command.name, command.content),
-      });
-    }
-
     for (const file of context.contextFiles) {
       files.push({ path: file.path, content: file.content });
     }
@@ -81,17 +74,6 @@ export class GeminiCliGenerator implements Generator {
       : settings;
 
     return JSON.stringify(mergedSettings, null, 2);
-  }
-
-  private buildCommandToml(name: string, content: string): string {
-    return [
-      `description = "${name}"`,
-      "",
-      `[template]`,
-      `prompt = """`,
-      content,
-      `"""`,
-    ].join("\n");
   }
 
   private buildSkill(skill: SkillMeta): string {

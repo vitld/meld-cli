@@ -20,13 +20,6 @@ export class CodexCliGenerator implements Generator {
       content: this.buildConfigToml(config, context),
     });
 
-    for (const command of context.commands) {
-      files.push({
-        path: `.agents/skills/meld-cmd-${command.name}/SKILL.md`,
-        content: command.content,
-      });
-    }
-
     for (const file of context.contextFiles) {
       files.push({ path: file.path, content: file.content });
     }

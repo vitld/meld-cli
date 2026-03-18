@@ -21,7 +21,6 @@ function makeContext(overrides: Partial<ComposedContext> = {}): ComposedContext 
     artifactsSection: "## Artifacts",
     context: "Rules here.",
     contextFiles: [],
-    commands: [],
     skills: [],
     ...overrides,
   };
@@ -66,14 +65,6 @@ describe("GeminiCliGenerator", () => {
     expect(parsed.mcpServers.ctx).toEqual({ type: "http", url: "https://mcp.example.com/mcp", headers: { "x-key": "val" }, env: { API_KEY: "sk" } });
     expect(parsed.mcpServers.local).toEqual({ command: "node", args: ["server.js"] });
     expect(parsed.mcpServers.local.type).toBeUndefined();
-  });
-
-  it("generates commands as .gemini/commands/meld/*.toml", () => {
-    const ctx = makeContext({ commands: [{ name: "review", content: "Do review" }] });
-    const { files } = gen.generate(makeConfig(), ctx);
-    const cmd = files.find((f) => f.path === ".gemini/commands/meld/review.toml");
-    expect(cmd).toBeDefined();
-    expect(cmd!.content).toContain("Do review");
   });
 
   it("generates local skill dirs with meld- prefix as SKILL.md (not TOML)", () => {

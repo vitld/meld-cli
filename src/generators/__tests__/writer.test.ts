@@ -31,12 +31,12 @@ describe("writeGeneratedFiles", () => {
   it("creates intermediate directories", () => {
     const dir = createTempDir();
     const files: GeneratedFile[] = [
-      { path: ".claude/commands/meld/gsd.md", content: "gsd command" },
+      { path: ".claude/skills/meld-review/SKILL.md", content: "review skill" },
     ];
     try {
       writeGeneratedFiles(dir, files);
-      expect(readFileSync(join(dir, ".claude/commands/meld/gsd.md"), "utf-8")).toBe(
-        "gsd command",
+      expect(readFileSync(join(dir, ".claude/skills/meld-review/SKILL.md"), "utf-8")).toBe(
+        "review skill",
       );
     } finally {
       rmSync(dir, { recursive: true, force: true });
