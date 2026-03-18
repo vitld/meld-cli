@@ -34,7 +34,7 @@ describe("agent overrides", () => {
       ide: { default: "cursor", workspaceName: "test" },
     };
 
-    const files = new ClaudeCodeGenerator().generate(config, context);
+    const { files } = new ClaudeCodeGenerator().generate(config, context);
     const settings = files.find((f) => f.path === ".claude/settings.json");
     expect(settings).toBeDefined();
 
@@ -62,7 +62,7 @@ describe("agent overrides", () => {
       ide: { default: "cursor", workspaceName: "test" },
     };
 
-    const files = new GeminiCliGenerator().generate(config, context);
+    const { files } = new GeminiCliGenerator().generate(config, context);
     const settings = files.find((f) => f.path === ".gemini/settings.json");
     expect(settings).toBeDefined();
 

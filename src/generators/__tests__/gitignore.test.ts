@@ -42,7 +42,7 @@ describe("GitignoreGenerator", () => {
   const gen = new GitignoreGenerator();
 
   it("generates .gitignore with agents/ and scratch/", () => {
-    const files = gen.generate(makeConfig(), makeContext(hubDir));
+    const { files } = gen.generate(makeConfig(), makeContext(hubDir));
     expect(files).toHaveLength(1);
     expect(files[0].path).toBe(".gitignore");
     expect(files[0].content).toContain("agents/");
@@ -51,7 +51,7 @@ describe("GitignoreGenerator", () => {
 
   it("preserves existing non-meld content", () => {
     writeFileSync(join(hubDir, ".gitignore"), "node_modules/\n.env\n");
-    const files = gen.generate(makeConfig(), makeContext(hubDir));
+    const { files } = gen.generate(makeConfig(), makeContext(hubDir));
     expect(files[0].content).toContain("node_modules/");
     expect(files[0].content).toContain("agents/");
   });
@@ -66,7 +66,7 @@ describe("GitignoreGenerator", () => {
     ].join("\n");
     writeFileSync(join(hubDir, ".gitignore"), existing);
 
-    const files = gen.generate(makeConfig(), makeContext(hubDir));
+    const { files } = gen.generate(makeConfig(), makeContext(hubDir));
     expect(files[0].content).toContain("agents/");
     expect(files[0].content).not.toContain("old-stuff/");
     expect(files[0].content).toContain(".env");

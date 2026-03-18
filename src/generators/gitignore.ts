@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import type { MeldConfig } from "../config/types.js";
 import type { ComposedContext } from "../context/types.js";
-import type { Generator, GeneratedFile } from "./types.js";
+import type { Generator, GenerateOutput } from "./types.js";
 
 const START_MARKER = "# ── meld managed (do not edit) ──";
 const END_MARKER = "# ── end meld managed ──";
@@ -10,7 +10,7 @@ const END_MARKER = "# ── end meld managed ──";
 export class GitignoreGenerator implements Generator {
   name = "gitignore";
 
-  generate(_config: MeldConfig, context: ComposedContext): GeneratedFile[] {
+  generate(_config: MeldConfig, context: ComposedContext): GenerateOutput {
     const lines: string[] = [
       "agents/",
       "scratch/",
@@ -24,7 +24,7 @@ export class GitignoreGenerator implements Generator {
 
     const content = spliceIntoExisting(context.hubDir, managedBlock);
 
-    return [{ path: ".gitignore", content }];
+    return { files: [{ path: ".gitignore", content }], skillDirs: [] };
   }
 }
 

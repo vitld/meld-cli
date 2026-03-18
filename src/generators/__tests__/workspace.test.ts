@@ -33,7 +33,7 @@ describe("WorkspaceGenerator", () => {
   const gen = new WorkspaceGenerator();
 
   it("generates workspace file with hub and projects", () => {
-    const files = gen.generate(makeConfig(), makeContext());
+    const { files } = gen.generate(makeConfig(), makeContext());
     expect(files).toHaveLength(1);
     expect(files[0].path).toBe("test-hub.code-workspace");
     const parsed = JSON.parse(files[0].content);
@@ -43,7 +43,7 @@ describe("WorkspaceGenerator", () => {
   });
 
   it("resolves ~ in project paths", () => {
-    const files = gen.generate(makeConfig(), makeContext());
+    const { files } = gen.generate(makeConfig(), makeContext());
     const parsed = JSON.parse(files[0].content);
     const myappFolder = parsed.folders.find((f: { name: string }) => f.name === "myapp");
     expect(myappFolder.path).not.toContain("~");

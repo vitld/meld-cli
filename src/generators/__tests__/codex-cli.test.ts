@@ -31,7 +31,7 @@ describe("CodexCliGenerator", () => {
   const gen = new CodexCliGenerator();
 
   it("generates AGENTS.md with all sections", () => {
-    const files = gen.generate(makeConfig(), makeContext());
+    const { files } = gen.generate(makeConfig(), makeContext());
     const agents = files.find((f) => f.path === "AGENTS.md");
     expect(agents).toBeDefined();
     expect(agents!.content).toContain("Test Hub");
@@ -50,7 +50,7 @@ describe("CodexCliGenerator", () => {
       },
     });
 
-    const files = gen.generate(config, makeContext());
+    const { files } = gen.generate(config, makeContext());
     const toml = files.find((f) => f.path === ".codex/config.toml");
     expect(toml).toBeDefined();
     expect(toml!.content).toContain('approval_policy = "on-request"');
@@ -67,7 +67,7 @@ describe("CodexCliGenerator", () => {
         local: { command: "node", args: ["server.js"] },
       },
     });
-    const files = gen.generate(config, makeContext());
+    const { files } = gen.generate(config, makeContext());
     const toml = files.find((f) => f.path === ".codex/config.toml");
     expect(toml).toBeDefined();
     expect(toml!.content).toContain("[mcp_servers.ctx]");
@@ -98,7 +98,7 @@ describe("CodexCliGenerator", () => {
       },
     });
 
-    const files = gen.generate(config, makeContext());
+    const { files } = gen.generate(config, makeContext());
     const toml = files.find((f) => f.path === ".codex/config.toml");
     expect(toml!.content).toContain('approval_policy = "never"');
     expect(toml!.content).toContain('network_access = true');
@@ -107,13 +107,13 @@ describe("CodexCliGenerator", () => {
 
   it("generates commands as .agents/skills/meld-cmd-*/SKILL.md", () => {
     const ctx = makeContext({ commands: [{ name: "review", content: "Do review" }] });
-    const files = gen.generate(makeConfig(), ctx);
+    const { files } = gen.generate(makeConfig(), ctx);
     const cmd = files.find((f) => f.path === ".agents/skills/meld-cmd-review/SKILL.md");
     expect(cmd).toBeDefined();
     expect(cmd!.content).toContain("Do review");
   });
 
-  it("generates skills as .agents/skills/meld-*/SKILL.md with codex model", () => {
+  it("generates local skill dirs with meld- prefix and codex model", () => {
     const ctx = makeContext({
       skills: [{
         name: "deep-review",
@@ -123,11 +123,26 @@ describe("CodexCliGenerator", () => {
         sourceDir: "/tmp/hub/skills/deep-review",
       }],
     });
-    const files = gen.generate(makeConfig(), ctx);
-    const skill = files.find((f) => f.path === ".agents/skills/meld-deep-review/SKILL.md");
-    expect(skill).toBeDefined();
-    expect(skill!.content).toContain("model: o3");
-    expect(skill!.content).not.toContain("claude-code");
+    const output = gen.generate(makeConfig(), ctx);
+    expect(output.skillDirs).toHaveLength(1);
+    expect(output.skillDirs[0].outputDir).toBe(".agents/skills/meld-deep-review");
+    expect(output.skillDirs[0].transformedSkillMd).toContain("model: o3");
+    expect(output.skillDirs[0].transformedSkillMd).not.toContain("claude-code");
+  });
+
+  it("generates external skill dirs without prefix", () => {
+    const ctx = makeContext({
+      skills: [{
+        name: "shadcn",
+        frontmatter: { name: "shadcn", description: "UI" },
+        body: "Use shadcn.",
+        source: "external",
+        sourceDir: "/tmp/hub/.agents/skills/shadcn",
+      }],
+    });
+    const output = gen.generate(makeConfig(), ctx);
+    expect(output.skillDirs).toHaveLength(1);
+    expect(output.skillDirs[0].outputDir).toBe(".agents/skills/shadcn");
   });
 
   it("emits contextFiles as generated files", () => {
@@ -136,7 +151,7 @@ describe("CodexCliGenerator", () => {
         { path: "reference/api.md", content: "API docs" },
       ],
     });
-    const files = gen.generate(makeConfig(), ctx);
+    const { files } = gen.generate(makeConfig(), ctx);
     const api = files.find((f) => f.path === "reference/api.md");
     expect(api).toBeDefined();
     expect(api!.content).toBe("API docs");

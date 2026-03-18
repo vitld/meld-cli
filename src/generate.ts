@@ -3,13 +3,13 @@ import { join } from "node:path";
 import { loadConfig } from "./config/loader.js";
 import { interpolateEnv } from "./config/interpolate.js";
 import { composeContext } from "./context/composer.js";
-import { writeGeneratedFiles } from "./generators/writer.js";
+import { writeGeneratedFiles, writeGeneratedSkillDirs } from "./generators/writer.js";
 import { ClaudeCodeGenerator } from "./generators/claude-code.js";
 import { CodexCliGenerator } from "./generators/codex-cli.js";
 import { GeminiCliGenerator } from "./generators/gemini-cli.js";
 import { WorkspaceGenerator } from "./generators/workspace.js";
 import { GitignoreGenerator } from "./generators/gitignore.js";
-import type { Generator, GeneratedFile } from "./generators/types.js";
+import type { Generator, GeneratedFile, GeneratedSkillDir } from "./generators/types.js";
 import { resolveAgentDir, AGENTS_DIR } from "./config/types.js";
 import type { AgentName, AgentConfig } from "./config/types.js";
 
@@ -41,6 +41,7 @@ export function generate(
   const context = composeContext(hubDir, config);
 
   const allFiles: GeneratedFile[] = [];
+  const allSkillDirs: GeneratedSkillDir[] = [];
 
   for (const [name, agentConfig] of Object.entries(config.agents) as [AgentName, AgentConfig][]) {
     if (!agentConfig.enabled) continue;
@@ -50,16 +51,21 @@ export function generate(
     const factory = AGENT_GENERATORS[name];
     if (!factory) continue;
 
-    const files = factory().generate(config, context);
-    for (const file of files) {
+    const output = factory().generate(config, context);
+    for (const file of output.files) {
       file.path = `${AGENTS_DIR}/${agentDir}/${file.path}`;
     }
-    allFiles.push(...files);
+    allFiles.push(...output.files);
+
+    for (const skillDir of output.skillDirs) {
+      skillDir.outputDir = `${AGENTS_DIR}/${agentDir}/${skillDir.outputDir}`;
+    }
+    allSkillDirs.push(...output.skillDirs);
   }
 
   if (!options.agent) {
-    allFiles.push(...new WorkspaceGenerator().generate(config, context));
-    allFiles.push(...new GitignoreGenerator().generate(config, context));
+    allFiles.push(...new WorkspaceGenerator().generate(config, context).files);
+    allFiles.push(...new GitignoreGenerator().generate(config, context).files);
   }
 
   // Ensure project artifact dirs exist
@@ -70,6 +76,7 @@ export function generate(
   }
 
   writeGeneratedFiles(hubDir, allFiles, { dryRun: options.dryRun });
+  writeGeneratedSkillDirs(hubDir, allSkillDirs, { dryRun: options.dryRun });
 
   return { ok: true, files: allFiles, warnings, hubName: config.ide.workspaceName };
 }

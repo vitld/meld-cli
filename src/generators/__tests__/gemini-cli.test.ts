@@ -31,7 +31,7 @@ describe("GeminiCliGenerator", () => {
   const gen = new GeminiCliGenerator();
 
   it("generates GEMINI.md with all sections", () => {
-    const files = gen.generate(makeConfig(), makeContext());
+    const { files } = gen.generate(makeConfig(), makeContext());
     const md = files.find((f) => f.path === "GEMINI.md");
     expect(md).toBeDefined();
     expect(md!.content).toContain("Test Hub");
@@ -45,7 +45,7 @@ describe("GeminiCliGenerator", () => {
         other: { command: "npx", args: [], agents: ["claude-code"] },
       },
     });
-    const files = gen.generate(config, makeContext());
+    const { files } = gen.generate(config, makeContext());
     const settings = files.find((f) => f.path === ".gemini/settings.json");
     expect(settings).toBeDefined();
     const parsed = JSON.parse(settings!.content);
@@ -60,7 +60,7 @@ describe("GeminiCliGenerator", () => {
         local: { command: "node", args: ["server.js"] },
       },
     });
-    const files = gen.generate(config, makeContext());
+    const { files } = gen.generate(config, makeContext());
     const settings = files.find((f) => f.path === ".gemini/settings.json");
     const parsed = JSON.parse(settings!.content);
     expect(parsed.mcpServers.ctx).toEqual({ type: "http", url: "https://mcp.example.com/mcp", headers: { "x-key": "val" }, env: { API_KEY: "sk" } });
@@ -70,13 +70,13 @@ describe("GeminiCliGenerator", () => {
 
   it("generates commands as .gemini/commands/meld/*.toml", () => {
     const ctx = makeContext({ commands: [{ name: "review", content: "Do review" }] });
-    const files = gen.generate(makeConfig(), ctx);
+    const { files } = gen.generate(makeConfig(), ctx);
     const cmd = files.find((f) => f.path === ".gemini/commands/meld/review.toml");
     expect(cmd).toBeDefined();
     expect(cmd!.content).toContain("Do review");
   });
 
-  it("generates skills as .gemini/commands/meld/*.toml (best-effort)", () => {
+  it("generates local skill dirs with meld- prefix as SKILL.md (not TOML)", () => {
     const ctx = makeContext({
       skills: [{
         name: "deep-review",
@@ -86,11 +86,30 @@ describe("GeminiCliGenerator", () => {
         sourceDir: "/tmp/hub/skills/deep-review",
       }],
     });
-    const files = gen.generate(makeConfig(), ctx);
-    const skill = files.find((f) => f.path === ".gemini/commands/meld/deep-review.toml");
-    expect(skill).toBeDefined();
-    expect(skill!.content).toContain("deep-review");
-    expect(skill!.content).toContain("Review code.");
+    const output = gen.generate(makeConfig(), ctx);
+
+    // No TOML skill files
+    expect(output.files.find((f) => f.path.includes("deep-review.toml"))).toBeUndefined();
+
+    // Skill directory instead
+    expect(output.skillDirs).toHaveLength(1);
+    expect(output.skillDirs[0].outputDir).toBe(".agents/skills/meld-deep-review");
+    expect(output.skillDirs[0].transformedSkillMd).toContain("model: gemini-2.5-pro");
+  });
+
+  it("generates external skill dirs without prefix", () => {
+    const ctx = makeContext({
+      skills: [{
+        name: "shadcn",
+        frontmatter: { name: "shadcn", description: "UI" },
+        body: "Use shadcn.",
+        source: "external",
+        sourceDir: "/tmp/hub/.agents/skills/shadcn",
+      }],
+    });
+    const output = gen.generate(makeConfig(), ctx);
+    expect(output.skillDirs).toHaveLength(1);
+    expect(output.skillDirs[0].outputDir).toBe(".agents/skills/shadcn");
   });
 
   it("emits contextFiles as generated files", () => {
@@ -99,7 +118,7 @@ describe("GeminiCliGenerator", () => {
         { path: "reference/api.md", content: "API docs" },
       ],
     });
-    const files = gen.generate(makeConfig(), ctx);
+    const { files } = gen.generate(makeConfig(), ctx);
     const api = files.find((f) => f.path === "reference/api.md");
     expect(api).toBeDefined();
     expect(api!.content).toBe("API docs");

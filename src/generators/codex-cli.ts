@@ -1,13 +1,13 @@
 import type { MeldConfig } from "../config/types.js";
 import { isHttpMcp } from "../config/types.js";
 import type { ComposedContext, SkillMeta } from "../context/types.js";
-import type { Generator, GeneratedFile } from "./types.js";
+import type { Generator, GenerateOutput, GeneratedFile, GeneratedSkillDir } from "./types.js";
 import { deepMerge, isPlainObject, serializeToml } from "./utils.js";
 
 export class CodexCliGenerator implements Generator {
   name = "codex-cli";
 
-  generate(config: MeldConfig, context: ComposedContext): GeneratedFile[] {
+  generate(config: MeldConfig, context: ComposedContext): GenerateOutput {
     const files: GeneratedFile[] = [];
 
     files.push({
@@ -27,18 +27,17 @@ export class CodexCliGenerator implements Generator {
       });
     }
 
-    for (const skill of context.skills) {
-      files.push({
-        path: `.agents/skills/meld-${skill.name}/SKILL.md`,
-        content: this.buildSkill(skill),
-      });
-    }
-
     for (const file of context.contextFiles) {
       files.push({ path: file.path, content: file.content });
     }
 
-    return files;
+    const skillDirs: GeneratedSkillDir[] = context.skills.map((skill) => ({
+      sourceDir: skill.sourceDir,
+      outputDir: `.agents/skills/${skill.source === "local" ? "meld-" : ""}${skill.name}`,
+      transformedSkillMd: this.buildSkill(skill),
+    }));
+
+    return { files, skillDirs };
   }
 
   private buildInstructions(context: ComposedContext): string {

@@ -33,7 +33,7 @@ describe("ClaudeCodeGenerator", () => {
   const gen = new ClaudeCodeGenerator();
 
   it("generates CLAUDE.md with all sections", () => {
-    const files = gen.generate(makeConfig(), makeContext());
+    const { files } = gen.generate(makeConfig(), makeContext());
     const claudeMd = files.find((f) => f.path === "CLAUDE.md");
     expect(claudeMd).toBeDefined();
     expect(claudeMd!.content).toContain("Test Hub");
@@ -49,7 +49,7 @@ describe("ClaudeCodeGenerator", () => {
         other: { command: "npx", args: ["-y", "other-mcp"], agents: ["codex-cli"] },
       },
     });
-    const files = gen.generate(config, makeContext());
+    const { files } = gen.generate(config, makeContext());
     const mcp = files.find((f) => f.path === ".mcp.json");
     expect(mcp).toBeDefined();
     const parsed = JSON.parse(mcp!.content);
@@ -64,7 +64,7 @@ describe("ClaudeCodeGenerator", () => {
         local: { command: "node", args: ["server.js"], env: { KEY: "val" } },
       },
     });
-    const files = gen.generate(config, makeContext());
+    const { files } = gen.generate(config, makeContext());
     const mcp = files.find((f) => f.path === ".mcp.json");
     const parsed = JSON.parse(mcp!.content);
     // HTTP server: type + url + headers + env, no command/args
@@ -76,13 +76,13 @@ describe("ClaudeCodeGenerator", () => {
 
   it("generates commands as .claude/commands/meld/*.md", () => {
     const ctx = makeContext({ commands: [{ name: "review", content: "Do review" }] });
-    const files = gen.generate(makeConfig(), ctx);
+    const { files } = gen.generate(makeConfig(), ctx);
     const cmd = files.find((f) => f.path === ".claude/commands/meld/review.md");
     expect(cmd).toBeDefined();
     expect(cmd!.content).toBe("Do review");
   });
 
-  it("generates skills as .claude/skills/meld-*/SKILL.md", () => {
+  it("generates local skill dirs with meld- prefix", () => {
     const ctx = makeContext({
       skills: [{
         name: "deep-review",
@@ -92,13 +92,28 @@ describe("ClaudeCodeGenerator", () => {
         sourceDir: "/tmp/hub/skills/deep-review",
       }],
     });
-    const files = gen.generate(makeConfig(), ctx);
-    const skill = files.find((f) => f.path === ".claude/skills/meld-deep-review/SKILL.md");
-    expect(skill).toBeDefined();
-    expect(skill!.content).toContain("name: deep-review");
-    expect(skill!.content).toContain("model: claude-opus-4-6");
-    expect(skill!.content).not.toContain("codex");
-    expect(skill!.content).toContain("Review thoroughly.");
+    const output = gen.generate(makeConfig(), ctx);
+    expect(output.skillDirs).toHaveLength(1);
+    expect(output.skillDirs[0].outputDir).toBe(".claude/skills/meld-deep-review");
+    expect(output.skillDirs[0].transformedSkillMd).toContain("model: claude-opus-4-6");
+    expect(output.skillDirs[0].transformedSkillMd).not.toContain("codex");
+    expect(output.skillDirs[0].transformedSkillMd).toContain("Review thoroughly.");
+  });
+
+  it("generates external skill dirs without prefix", () => {
+    const ctx = makeContext({
+      skills: [{
+        name: "shadcn",
+        frontmatter: { name: "shadcn", description: "UI" },
+        body: "Use shadcn.",
+        source: "external",
+        sourceDir: "/tmp/hub/.agents/skills/shadcn",
+      }],
+    });
+    const output = gen.generate(makeConfig(), ctx);
+    expect(output.skillDirs).toHaveLength(1);
+    expect(output.skillDirs[0].outputDir).toBe(".claude/skills/shadcn");
+    expect(output.skillDirs[0].sourceDir).toBe("/tmp/hub/.agents/skills/shadcn");
   });
 
   it("generates .claude/settings.json with permissions", () => {
@@ -108,7 +123,7 @@ describe("ClaudeCodeGenerator", () => {
         other: { path: "~/other", aliases: [] },
       },
     });
-    const files = gen.generate(config, makeContext());
+    const { files } = gen.generate(config, makeContext());
     const settings = files.find((f) => f.path === ".claude/settings.json");
     expect(settings).toBeDefined();
     const parsed = JSON.parse(settings!.content);
@@ -166,10 +181,8 @@ describe("ClaudeCodeGenerator", () => {
         sourceDir: "/tmp/hub/skills/test-skill",
       }],
     });
-    const files = gen.generate(makeConfig(), ctx);
-    const skill = files.find((f) => f.path === ".claude/skills/meld-test-skill/SKILL.md");
-    expect(skill).toBeDefined();
-    expect(skill!.content).not.toContain("model:");
+    const { skillDirs } = gen.generate(makeConfig(), ctx);
+    expect(skillDirs[0].transformedSkillMd).not.toContain("model:");
   });
 
   it("passes through string model", () => {
@@ -182,9 +195,8 @@ describe("ClaudeCodeGenerator", () => {
         sourceDir: "/tmp/hub/skills/test-skill",
       }],
     });
-    const files = gen.generate(makeConfig(), ctx);
-    const skill = files.find((f) => f.path === ".claude/skills/meld-test-skill/SKILL.md");
-    expect(skill!.content).toContain("model: claude-opus-4-6");
+    const { skillDirs } = gen.generate(makeConfig(), ctx);
+    expect(skillDirs[0].transformedSkillMd).toContain("model: claude-opus-4-6");
   });
 
   it("emits contextFiles as generated files", () => {
@@ -194,7 +206,7 @@ describe("ClaudeCodeGenerator", () => {
         { path: "guides/setup.md", content: "Setup" },
       ],
     });
-    const files = gen.generate(makeConfig(), ctx);
+    const { files } = gen.generate(makeConfig(), ctx);
     const api = files.find((f) => f.path === "reference/api.md");
     const setup = files.find((f) => f.path === "guides/setup.md");
     expect(api).toBeDefined();
