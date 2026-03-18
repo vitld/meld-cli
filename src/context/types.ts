@@ -30,4 +30,6 @@ export interface SkillMeta {
   name: string;
   frontmatter: Record<string, unknown>;
   body: string;
+  source: "local" | "external";
+  sourceDir: string;
 }

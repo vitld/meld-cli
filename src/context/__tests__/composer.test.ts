@@ -117,6 +117,22 @@ describe("composeContext", () => {
     expect(ctx.skills[0].body).toContain("Review the code thoroughly.");
   });
 
+  it("includes source and sourceDir on local skills", () => {
+    mkdirSync(join(hubDir, "skills", "my-skill"), { recursive: true });
+    writeFileSync(join(hubDir, "skills", "my-skill", "SKILL.md"), [
+      "---",
+      "name: my-skill",
+      "description: A skill",
+      "---",
+      "",
+      "Do the thing.",
+    ].join("\n"));
+
+    const ctx = composeContext(hubDir, makeConfig());
+    expect(ctx.skills[0].source).toBe("local");
+    expect(ctx.skills[0].sourceDir).toBe(join(hubDir, "skills", "my-skill"));
+  });
+
   it("skips skill folders without SKILL.md", () => {
     mkdirSync(join(hubDir, "skills", "empty"), { recursive: true });
 

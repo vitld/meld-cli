@@ -88,6 +88,8 @@ describe("ClaudeCodeGenerator", () => {
         name: "deep-review",
         frontmatter: { name: "deep-review", description: "Review", model: { "claude-code": "claude-opus-4-6", "codex-cli": "o3" } },
         body: "Review thoroughly.",
+        source: "local",
+        sourceDir: "/tmp/hub/skills/deep-review",
       }],
     });
     const files = gen.generate(makeConfig(), ctx);
@@ -160,6 +162,8 @@ describe("ClaudeCodeGenerator", () => {
         name: "test-skill",
         frontmatter: { name: "test-skill", description: "Test", model: { "codex-cli": "o3" } },
         body: "Body.",
+        source: "local",
+        sourceDir: "/tmp/hub/skills/test-skill",
       }],
     });
     const files = gen.generate(makeConfig(), ctx);
@@ -174,6 +178,8 @@ describe("ClaudeCodeGenerator", () => {
         name: "test-skill",
         frontmatter: { name: "test-skill", description: "Test", model: "claude-opus-4-6" },
         body: "Body.",
+        source: "local",
+        sourceDir: "/tmp/hub/skills/test-skill",
       }],
     });
     const files = gen.generate(makeConfig(), ctx);

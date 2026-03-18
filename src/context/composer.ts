@@ -150,14 +150,14 @@ function readSkills(hubDir: string): SkillMeta[] {
   return readdirSync(skillsDir, { withFileTypes: true })
     .filter((d) => d.isDirectory())
     .sort((a, b) => a.name.localeCompare(b.name))
-    .map((d) => {
+    .map((d): SkillMeta | null => {
       const skillFile = join(skillsDir, d.name, "SKILL.md");
       if (!existsSync(skillFile)) return null;
 
       const raw = readFileSync(skillFile, "utf-8");
       const { frontmatter, body } = parseFrontmatter(raw);
 
-      return { name: d.name, frontmatter, body };
+      return { name: d.name, frontmatter, body, source: "local", sourceDir: join(skillsDir, d.name) };
     })
     .filter((s): s is SkillMeta => s !== null);
 }

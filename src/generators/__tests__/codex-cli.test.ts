@@ -119,6 +119,8 @@ describe("CodexCliGenerator", () => {
         name: "deep-review",
         frontmatter: { name: "deep-review", description: "Review", model: { "claude-code": "opus", "codex-cli": "o3" } },
         body: "Review code.",
+        source: "local",
+        sourceDir: "/tmp/hub/skills/deep-review",
       }],
     });
     const files = gen.generate(makeConfig(), ctx);

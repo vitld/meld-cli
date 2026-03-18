@@ -82,6 +82,8 @@ describe("GeminiCliGenerator", () => {
         name: "deep-review",
         frontmatter: { name: "deep-review", description: "Review", model: { "gemini-cli": "gemini-2.5-pro" } },
         body: "Review code.",
+        source: "local",
+        sourceDir: "/tmp/hub/skills/deep-review",
       }],
     });
     const files = gen.generate(makeConfig(), ctx);
