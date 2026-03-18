@@ -94,6 +94,13 @@ export function validateConfig(input: unknown): ValidationResult {
     }
   }
 
+  // Validate enable-external-skills if present
+  if ("enable-external-skills" in obj && obj["enable-external-skills"] != null) {
+    if (typeof obj["enable-external-skills"] !== "boolean") {
+      errors.push("enable-external-skills must be a boolean");
+    }
+  }
+
   if (errors.length > 0) {
     return { ok: false, errors };
   }

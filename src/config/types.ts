@@ -4,6 +4,7 @@ export interface MeldConfig {
   mcp: Record<string, McpServerConfig>;
   context?: string;
   ide: IdeConfig;
+  "enable-external-skills"?: boolean;
 }
 
 export type AgentName = "claude-code" | "codex-cli" | "gemini-cli";

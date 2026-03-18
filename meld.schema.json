@@ -48,6 +48,11 @@
       "description": "Path to context directory containing .md files. Default: ./context/",
       "default": "./context/"
     },
+    "enable-external-skills": {
+      "type": "boolean",
+      "description": "When true, meld gen discovers skills installed by skillsadd at .agents/skills/. Default: false",
+      "default": false
+    },
     "ide": {
       "type": "object",
       "required": ["default", "workspaceName"],

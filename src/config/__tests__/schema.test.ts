@@ -107,6 +107,16 @@ describe("validateConfig", () => {
     expect(result.ok).toBe(false);
   });
 
+  it("accepts enable-external-skills boolean", () => {
+    const result = validateConfig({ ...minimal, "enable-external-skills": true });
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects non-boolean enable-external-skills", () => {
+    const result = validateConfig({ ...minimal, "enable-external-skills": "yes" });
+    expect(result.ok).toBe(false);
+  });
+
   it("does not require git key", () => {
     const result = validateConfig(minimal);
     expect(result.ok).toBe(true);
