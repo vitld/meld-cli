@@ -1,3 +1,15 @@
+# [0.3.0](https://github.com/vitld/meld-cli/compare/v0.2.2...v0.3.0) (2026-03-18)
+
+
+### Features
+
+* **config:** add enable-external-skills option ([69f40c4](https://github.com/vitld/meld-cli/commit/69f40c43707e038202d894fa0e801cc22178ad1d))
+* **context:** add source and sourceDir to SkillMeta ([10f31a6](https://github.com/vitld/meld-cli/commit/10f31a66f47eb4ddbca7dab7c95f3a40a95910d9))
+* **context:** discover external skills from .agents/skills/ ([09574b7](https://github.com/vitld/meld-cli/commit/09574b709f697a6d01098f08624d4fd42a5f9e7f))
+* **context:** mention .agents/skills/ in hub preamble when enabled ([d14626d](https://github.com/vitld/meld-cli/commit/d14626d05dd91126c56a5ce085c7ca3c5524308a))
+* directory-based skill output with prefix logic for all generators ([618e6d1](https://github.com/vitld/meld-cli/commit/618e6d11f7491dbcca2b76ed63dd55998e4562a3))
+* **writer:** add GeneratedSkillDir type and directory copy writer ([15395c3](https://github.com/vitld/meld-cli/commit/15395c3ef7c7e29e512123b6dac59468e73145f9))
+
 ## [0.2.2](https://github.com/vitld/meld-cli/compare/v0.2.1...v0.2.2) (2026-03-13)
 
 
